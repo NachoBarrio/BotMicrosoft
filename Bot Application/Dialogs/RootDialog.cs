@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
-using Microsoft.Bot.Builder.Dialogs;
 
 namespace Bot_Application.Dialogs
 {
@@ -16,35 +16,54 @@ namespace Bot_Application.Dialogs
 
             return Task.CompletedTask;
         }
-
+        // First dialog, root
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<object> result)
         {
             var activity = await result as Activity;
-            if (activity.Text.ToLower().Contains("order"))
+            if (activity.Text.ToLower().Contains("hello") || activity.Text.ToLower().Contains("hi"))
             {
                 // User said 'order', so invoke the New Order Dialog and wait for it to finish.
-                // Then, call ResumeAfterNewOrderDialog.
-                await context.Forward(new NewOrderDialog(), this.ResumeAfterNewOrderDialog, activity, CancellationToken.None);
+                context.Call(new  WelcomeDialog(),this.ResumeAfterWelcomeDialog);
             }
-            // calculate something for us to return
-            int length = (activity.Text ?? string.Empty).Length;
-
-            // return our reply to the user
-            //await context.PostAsync($"You sent {activity.Text} which was {length} characters");
-
+            
+            if (activity.Text.ToLower().Equals("phonecall") ||  activity.Text.ToLower().Equals("Appointment"))
+            {
+                //create a new Dialog to select a day to do the activity
+                context.Call(new CalendarDialog(), this.ResumeAfterWelcomeDialog);
+            }
             context.Wait(MessageReceivedAsync);
         }
 
-        private async Task ResumeAfterNewOrderDialog(IDialogContext context, IAwaitable<string> result)
+        private async Task ResumeAfterWelcomeDialog(IDialogContext context, IAwaitable<object> result)
         {
-            // Store the value that NewOrderDialog returned. 
-            // (At this point, new order dialog has finished and returned some value to use within the root dialog.)
-            var resultFromNewOrder = await result;
+            try
+            {             // Store the value the name returned. 
+                          // (At this point, new order dialog has finished and returned some value to use within the root dialog.)
+                var activity = await result as Activity;
 
-            await context.PostAsync($"New order dialog just told me this: {resultFromNewOrder}");
+                await context.PostAsync($"Hello {activity.Text.ToString()} I´m glad to guide you during this experience");
+                await context.PostAsync($"You are just about to enter in the investors world");
 
-            // Again, wait for the next message from the user.
-            context.Wait(this.MessageReceivedAsync);
+                var reply = activity.CreateReply("Which action do you want to perform?");
+                reply.Type = ActivityTypes.Message;
+                reply.TextFormat = TextFormatTypes.Plain;
+
+                reply.SuggestedActions = new SuggestedActions()
+                {
+                    Actions = new List<CardAction>()
+                    {
+                        new CardAction(){ Title = "Receive email with information", Type=ActionTypes.ImBack, Value="Email" },
+                        new CardAction(){ Title = "Receive a call from one of our experts", Type=ActionTypes.ImBack, Value="phonecall" },
+                        new CardAction(){ Title = "Let´s try and hang around with a real investor manager", Type=ActionTypes.ImBack, Value="Appointment" }
+                    }
+                };
+
+                context.Wait(MessageReceivedAsync);
+            }
+            catch(Exception e)
+            {
+                await context.PostAsync($"Oooops, something happened.... {e.Message.ToString()}");
+            }
         }
     }
 }
