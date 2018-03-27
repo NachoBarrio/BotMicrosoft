@@ -10,11 +10,11 @@ namespace Bot_Application.Dialogs
     [Serializable]
     public class RootDialog : IDialog<object>
     {
-        public Task StartAsync(IDialogContext context)
+        public async Task StartAsync(IDialogContext context)
         {
             context.Wait(MessageReceivedAsync);
 
-            return Task.CompletedTask;
+           // return Task.CompletedTask;
         }
         // First dialog, root
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<object> result)
@@ -23,15 +23,15 @@ namespace Bot_Application.Dialogs
             if (activity.Text.ToLower().Contains("hello") || activity.Text.ToLower().Contains("hi"))
             {
                 // User said 'order', so invoke the New Order Dialog and wait for it to finish.
-                context.Call(new  WelcomeDialog(),this.ResumeAfterWelcomeDialog);
+                //await this.SendWelcomePackAsyn(context);
+                await context.Forward(new WelcomeDialog(), this.ResumeAfterWelcomeDialog, activity, CancellationToken.None);
             }
-            
-            if (activity.Text.ToLower().Equals("phonecall") ||  activity.Text.ToLower().Equals("Appointment"))
+
+            if (activity.Text.ToLower().Equals("phonecall") || activity.Text.ToLower().Equals("Appointment"))
             {
                 //create a new Dialog to select a day to do the activity
-                context.Call(new CalendarDialog(), this.ResumeAfterWelcomeDialog);
+                context.Call<Object>(new CalendarDialog(), this.ResumeAfterWelcomeDialog);
             }
-            context.Wait(MessageReceivedAsync);
         }
 
         private async Task ResumeAfterWelcomeDialog(IDialogContext context, IAwaitable<object> result)
