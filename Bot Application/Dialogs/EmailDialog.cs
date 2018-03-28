@@ -22,7 +22,7 @@ namespace Bot_Application.Dialogs
             await context.PostAsync($"Which is your email address?");
             context.Wait(this.MessageReceivedAsync);
         }
-        public virtual async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
+        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result as Activity;
             try
@@ -33,7 +33,14 @@ namespace Bot_Application.Dialogs
                     /* Completes the dialog, removes it from the dialog stack, and returns the result to the parent/calling
                         dialog. */
                     context.UserData.SetValue("userEmail", message.Text);
-                    context.Wait(this.EmailReceivedAsync);
+                    var messagePrompt = context.MakeMessage();
+                    var attachment = GetInvestorsCard();
+                    message.Attachments.Add(attachment);
+                    await context.PostAsync(message);
+
+                    // Show the list of plan  
+                    context.Wait(this.ShowSubscriptionPrompt);
+
                 }
                 /* Else, try again by re-prompting the user. */
                 else
@@ -59,27 +66,13 @@ namespace Bot_Application.Dialogs
             }
         }
 
-        public virtual async Task EmailReceivedAsync(IDialogContext context, IAwaitable<object> result)
-        {
-            var message = await result as Activity;
+        private async Task SubscriptionReceivedAsync(IDialogContext context, IAwaitable<BooleanOptionSubscription> result)
+        {          
             try
             {
                 //present subscription to email marketing list
-                PromptDialog.Choice(
-
-                   context: context,
-
-                   resume: SubscriptionReceivedAsync,
-
-                   options: (IEnumerable<BooleanOptionSubscription>)Enum.GetValues(typeof(BooleanOptionSubscription)),
-
-                   prompt: "Do you want to subscribe to our marketing list ?",
-
-                   retry: " Please try again.",
-
-                   promptStyle: PromptStyle.Auto
-
-               );
+                BooleanOptionSubscription response = await result;
+                context.Done(this);
             }
             catch (Exception e)
             {
@@ -87,12 +80,27 @@ namespace Bot_Application.Dialogs
             }
         }
 
-        public virtual async Task SubscriptionReceivedAsync(IDialogContext context, IAwaitable<BooleanOptionSubscription> result)
+        public virtual async Task ShowSubscriptionPrompt(IDialogContext context, IAwaitable<IMessageActivity> activity)
         {
-            await context.PostAsync("Thanks for submitting your information .");
+            var message = await activity;
 
-            context.Done(this);
+            PromptDialog.Choice(
+
+                      context: context,
+
+                      resume: SubscriptionReceivedAsync,
+
+                      options: (IEnumerable<BooleanOptionSubscription>)Enum.GetValues(typeof(BooleanOptionSubscription)),
+
+                      prompt: "Do you want to subscribe to our marketing list ?",
+
+                      retry: " Please try again.",
+
+                      promptStyle: PromptStyle.Auto
+
+                   );
         }
+
         public static bool ComprobarFormatoEmail(string sEmailAComprobar)
         {
             String sFormato;

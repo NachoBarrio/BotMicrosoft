@@ -15,14 +15,14 @@ namespace Bot_Application.Dialogs
         {
              context.Wait(this.MessageReceivedAsync);
         }
-        public virtual async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
+        private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             await context.PostAsync("Hello there, who is there? What is your name?");
             context.Wait(this.NameReceivedAsync);
         }
 
 
-        public virtual async Task NameReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
+        private async Task NameReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result as Activity;
 
