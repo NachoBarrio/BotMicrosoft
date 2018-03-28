@@ -13,8 +13,6 @@ namespace Bot_Application.Dialogs
         public async Task StartAsync(IDialogContext context)
         {
             context.Wait(MessageReceivedAsync);
-
-           // return Task.CompletedTask;
         }
         // First dialog, root
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<object> result)
@@ -25,13 +23,7 @@ namespace Bot_Application.Dialogs
                 // User said 'order', so invoke the New Order Dialog and wait for it to finish.
                 //await this.SendWelcomePackAsyn(context);
                 await context.Forward(new WelcomeDialog(), this.ResumeAfterWelcomeDialog, activity, CancellationToken.None);
-            }
-
-            if (activity.Text.ToLower().Equals("phonecall") || activity.Text.ToLower().Equals("Appointment"))
-            {
-                //create a new Dialog to select a day to do the activity
-                context.Call<Object>(new CalendarDialog(), this.ResumeAfterWelcomeDialog);
-            }
+            }          
         }
 
         private async Task ResumeAfterWelcomeDialog(IDialogContext context, IAwaitable<object> result)
@@ -40,30 +32,35 @@ namespace Bot_Application.Dialogs
             {             // Store the value the name returned. 
                           // (At this point, new order dialog has finished and returned some value to use within the root dialog.)
                 var activity = await result as Activity;
+                // invoke next dialog to ask for an action
+                await context.Forward(new ActivityDialog(), this.ResumeAfterActivityDialog, activity, CancellationToken.None);
 
-                await context.PostAsync($"Hello {activity.Text.ToString()} I´m glad to guide you during this experience");
-                await context.PostAsync($"You are just about to enter in the investors world");
-
-                var reply = activity.CreateReply("Which action do you want to perform?");
-                reply.Type = ActivityTypes.Message;
-                reply.TextFormat = TextFormatTypes.Plain;
-
-                reply.SuggestedActions = new SuggestedActions()
-                {
-                    Actions = new List<CardAction>()
-                    {
-                        new CardAction(){ Title = "Receive email with information", Type=ActionTypes.ImBack, Value="Email" },
-                        new CardAction(){ Title = "Receive a call from one of our experts", Type=ActionTypes.ImBack, Value="phonecall" },
-                        new CardAction(){ Title = "Let´s try and hang around with a real investor manager", Type=ActionTypes.ImBack, Value="Appointment" }
-                    }
-                };
-
-                context.Wait(MessageReceivedAsync);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 await context.PostAsync($"Oooops, something happened.... {e.Message.ToString()}");
             }
+        }
+        private async Task ResumeAfterActivityDialog(IDialogContext context, IAwaitable<object> result)
+        {
+            try
+            {             // option set is returned
+                          // (At this point, new order dialog has finished and returned some value to use within the root dialog.)
+                var activity = await result as Activity;
+                // invoke next dialog to ask for an action 
+                //TODO insert case for each response
+                await context.Forward(new EmailDialog(), this.ResumeAfterEmailDialog, activity, CancellationToken.None);
+
+            }
+            catch (Exception e)
+            {
+                await context.PostAsync($"Oooops, something happened.... {e.Message.ToString()}");
+            }
+        }
+
+        private async Task ResumeAfterEmailDialog(IDialogContext context, IAwaitable<object> result)
+        {
+            context.Wait(this.MessageReceivedAsync);
         }
     }
 }
