@@ -18,11 +18,15 @@ namespace Bot_Application.Dialogs
             noSubscribe,
         }
         public async Task StartAsync(IDialogContext context)
-        {
-            await context.PostAsync($"Which is your email address?");
+        {  
             context.Wait(this.MessageReceivedAsync);
         }
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
+        {
+            await context.PostAsync($"Which is your email address?");
+            context.Wait(this.PromptAsync);
+        }
+            private async Task PromptAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result as Activity;
             try
@@ -35,8 +39,9 @@ namespace Bot_Application.Dialogs
                     context.UserData.SetValue("userEmail", message.Text);
                     var messagePrompt = context.MakeMessage();
                     var attachment = GetInvestorsCard();
-                    message.Attachments.Add(attachment);
-                    await context.PostAsync(message);
+                    messagePrompt.Attachments.Add(attachment);
+                   
+                    await context.PostAsync(messagePrompt);
 
                     // Show the list of plan  
                     context.Wait(this.ShowSubscriptionPrompt);
@@ -132,7 +137,7 @@ namespace Bot_Application.Dialogs
 
                 Text = "With this information updated each month you are up to earn money without much effort",
 
-                Images = new List<CardImage> { new CardImage("https://www.google.es/imgres?imgurl=https%3A%2F%2Fi.ytimg.com%2Fvi%2F5wZ5ZHYWoTE%2Fmaxresdefault.jpg&imgrefurl=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3D5wZ5ZHYWoTE&docid=DAar-q_6P5Q2kM&tbnid=Ju7xgMtjliuLJM%3A&vet=10ahUKEwic7ofY5I7aAhWMbxQKHa0JAN0QMwg7KAYwBg..i&w=1280&h=720&bih=734&biw=1536&q=imagenes%20bestinver&ved=0ahUKEwic7ofY5I7aAhWMbxQKHa0JAN0QMwg7KAYwBg&iact=mrc&uact=8") },
+                Images = new List<CardImage> { new CardImage(AppDomain.CurrentDomain.BaseDirectory + "\\Content\\BestInver.jpg") },
 
                 Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "Investors School", value: "https://www.bestinver.es/escuela-de-inversion/") }
             };

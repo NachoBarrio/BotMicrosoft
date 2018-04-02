@@ -18,6 +18,7 @@ namespace Bot_Application.Dialogs
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<object> result)
         {
             var activity = await result as Activity;
+            
             if (activity.Text.ToLower().Contains("hello") || activity.Text.ToLower().Contains("hi"))
             {
                 // User said 'order', so invoke the New Order Dialog and wait for it to finish.
@@ -41,15 +42,20 @@ namespace Bot_Application.Dialogs
                 await context.PostAsync($"Oooops, something happened.... {e.Message.ToString()}");
             }
         }
-        private async Task ResumeAfterActivityDialog(IDialogContext context, IAwaitable<object> result)
+        private async Task ResumeAfterActivityDialog(IDialogContext context, IAwaitable<Object> result)
         {
             try
             {             // option set is returned
                           // (At this point, new order dialog has finished and returned some value to use within the root dialog.)
                 var activity = await result as Activity;
+                
                 // invoke next dialog to ask for an action 
                 //TODO insert case for each response
-                await context.Forward(new EmailDialog(), this.ResumeAfterEmailDialog, activity, CancellationToken.None);
+                if (activity.Text.Equals("1"))
+                {
+                    await context.Forward(new EmailDialog(), this.ResumeAfterEmailDialog, activity, CancellationToken.None);
+                }
+                
 
             }
             catch (Exception e)
@@ -60,6 +66,8 @@ namespace Bot_Application.Dialogs
 
         private async Task ResumeAfterEmailDialog(IDialogContext context, IAwaitable<object> result)
         {
+            //In CRM a task will be created periodically to send emails as well as lead
+            await context.PostAsync("Thank you for subscribe to our monthly white paper");
             context.Wait(this.MessageReceivedAsync);
         }
     }

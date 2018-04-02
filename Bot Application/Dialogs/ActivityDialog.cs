@@ -48,9 +48,10 @@ namespace Bot_Application.Dialogs
             try
             {
                 var activity = await result as Activity;
-                if(activity.Text.Equals("1"))
+
+                if (activity.Text.Equals("1"))
                 {
-                    context.Done(activity.Text);
+                    context.Done(activity);
                 }
                 else
                 {
