@@ -44,7 +44,22 @@ namespace Bot_Application.Dialogs
                     await context.PostAsync(messagePrompt);
 
                     // Show the list of plan  
-                    context.Wait(this.ShowSubscriptionPrompt);
+                    //context.Wait(this.ShowSubscriptionPrompt);
+                    PromptDialog.Choice(
+
+                      context: context,
+
+                      resume: SubscriptionReceivedAsync,
+
+                      options: (IEnumerable<BooleanOptionSubscription>)Enum.GetValues(typeof(BooleanOptionSubscription)),
+
+                      prompt: "Do you want to subscribe to our marketing list ?",
+
+                      retry: " Please try again.",
+
+                      promptStyle: PromptStyle.Auto
+
+                   );
 
                 }
                 /* Else, try again by re-prompting the user. */
@@ -77,7 +92,7 @@ namespace Bot_Application.Dialogs
             {
                 //present subscription to email marketing list
                 BooleanOptionSubscription response = await result;
-                context.Done(this);
+                context.Done(response);
             }
             catch (Exception e)
             {
@@ -88,7 +103,6 @@ namespace Bot_Application.Dialogs
         public virtual async Task ShowSubscriptionPrompt(IDialogContext context, IAwaitable<IMessageActivity> activity)
         {
             var message = await activity;
-
             PromptDialog.Choice(
 
                       context: context,
@@ -104,6 +118,7 @@ namespace Bot_Application.Dialogs
                       promptStyle: PromptStyle.Auto
 
                    );
+
         }
 
         public static bool ComprobarFormatoEmail(string sEmailAComprobar)

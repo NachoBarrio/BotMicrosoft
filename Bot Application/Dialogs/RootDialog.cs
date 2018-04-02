@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Bot_Application.Bot_To_CRM;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 
@@ -66,7 +67,15 @@ namespace Bot_Application.Dialogs
 
         private async Task ResumeAfterEmailDialog(IDialogContext context, IAwaitable<object> result)
         {
+            var activity = await result;
             //In CRM a task will be created periodically to send emails as well as lead
+            if (activity.Equals("subscribe")) {
+                var name = context.UserData.ContainsKey("userName") ? context.UserData.GetValue<string>("userName").ToString() : "empty";
+                var email = context.UserData.ContainsKey("userEmail") ? context.UserData.GetValue<string>("userEmail").ToString() : "empty";
+                EmailDialogToCRM.createLead(name, email);
+            }
+            
+
             await context.PostAsync("Thank you for subscribe to our monthly white paper");
             context.Wait(this.MessageReceivedAsync);
         }

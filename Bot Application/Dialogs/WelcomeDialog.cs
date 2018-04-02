@@ -30,6 +30,7 @@ namespace Bot_Application.Dialogs
             {
                 /* Completes the dialog, removes it from the dialog stack, and returns the result to the parent/calling
                     dialog. */
+                 // save name in user´s profile through all app
                 context.UserData.SetValue("userName", message.Text);
                 context.Done(message);
             }
