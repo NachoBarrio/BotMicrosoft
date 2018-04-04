@@ -152,7 +152,7 @@ namespace Bot_Application.Dialogs
 
                 Text = "With this information updated each month you are up to earn money without much effort",
 
-                Images = new List<CardImage> { new CardImage(AppDomain.CurrentDomain.BaseDirectory + "\\Content\\BestInver.jpg") },
+                Images = new List<CardImage> { new CardImage("https://yt3.ggpht.com/a-/AJLlDp2Kt3mWSrypmWf7bAetxuh6snQ8y5eEeC1G1g=s900-mo-c-c0xffffffff-rj-k-no") },
 
                 Buttons = new List<CardAction> { new CardAction(ActionTypes.OpenUrl, "Investors School", value: "https://www.bestinver.es/escuela-de-inversion/") }
             };
