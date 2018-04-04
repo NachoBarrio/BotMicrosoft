@@ -17,7 +17,7 @@ namespace Bot_Application.Dialogs
         }
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
-            await context.PostAsync("Hello there, who is there? What is your name?");
+            await context.PostAsync("Hello there, What is your name?");
             context.Wait(this.NameReceivedAsync);
         }
 
